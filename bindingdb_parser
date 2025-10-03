@@ -1,0 +1,70 @@
+from rdkit import Chem
+from rdkit.Chem import SDMolSupplier
+import torch
+import os
+import pandas as pd
+from tqdm import tqdm
+
+sdf_path = "BindingDB_All_3D.sdf" # Downloaded from BindingDB
+output_csv = "bindingdb_ligand_target_pairs.csv"
+target_sequence_key = "BindingDB Target Chain Sequence"
+affinity_key = "Ki (nM)"
+
+# Output container
+records = []
+
+# RDKit SDF parser
+supplier = SDMolSupplier(sdf_path, removeHs=False)
+print("Parsing SDF...")
+
+for mol in tqdm(supplier):
+    if mol is None:
+        continue
+
+    try:
+        # 3D coordinates
+        conf = mol.GetConformer()
+        coords = conf.GetPositions()  # shape: (n_atoms, 3)
+        atomic_numbers = [atom.GetAtomicNum() for atom in mol.GetAtoms()]
+
+        # Protein sequence
+        if not mol.HasProp(target_sequence_key):
+            continue  # skip if missing sequence
+        sequence = mol.GetProp(target_sequence_key).replace(" ", "").replace("\n", "")
+
+        # Binding affinity
+        if not mol.HasProp(affinity_key):
+            continue  # skip if no Ki
+        ki_str = mol.GetProp(affinity_key).strip().lower()
+        if ki_str in ["", "n/a", "na"]:
+            print("Skipped: Ki is empty or not available")
+            continue
+
+        try:
+            ki_nM = float(ki_str)
+            if ki_nM <= 0:
+                print("Skipped: Ki is non-positive")
+                continue
+            pKi = -torch.log10(torch.tensor(ki_nM * 1e-9)).item()
+        except ValueError:
+            print(f"Skipped: Ki is not a valid float: {ki_str}")
+            continue
+        if ki_nM <= 0:
+            continue
+        pKi = -torch.log10(torch.tensor(ki_nM * 1e-9)).item()  # convert nM → pKi
+
+        records.append({
+            "z": atomic_numbers,     # atomic numbers
+            "pos": coords.tolist(),  # 3D coordinates
+            "seq": sequence,         # protein sequence
+            "pKi": pKi               # affinity label
+        })
+
+    except Exception as e:
+        print(f"Error on molecule: {e}")
+        continue
+
+
+df = pd.DataFrame(records)
+df.to_csv(output_csv, index=False)
+print(f"Saved {len(df)} ligand–target entries to {output_csv}")
