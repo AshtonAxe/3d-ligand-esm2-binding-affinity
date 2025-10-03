@@ -116,3 +116,20 @@ for epoch in range(num_epochs):
     val_r2s.append(val_r2)
 
     print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}")
+
+torch.save(model.state_dict(), "best_model.pt")
+torch.save(optimizer.state_dict(), "optimizer.pt")
+torch.save({
+    'epoch': epoch,
+    'train_losses': train_losses,
+    'val_losses': val_losses,
+    'val_rmses': val_rmses,
+    'val_r2s': val_r2s,
+    'best_val_loss': best_val_loss,
+    'patience_counter': patience_counter,
+    'mean_pKi': mean_pKi,
+    'std_pKi': std_pKi,
+    'min_delta': min_delta,
+    'patience': patience,
+    'save_path': save_path
+}, "training_state.pt")
