@@ -68,3 +68,4 @@ for mol in tqdm(supplier):
 df = pd.DataFrame(records)
 df.to_csv(output_csv, index=False)
 print(f"Saved {len(df)} ligand–target entries to {output_csv}")
+# Length should be 524813
