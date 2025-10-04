@@ -1,4 +1,13 @@
-# Cross-Attention-of-3D-Drug-Geometry-and-ESM2-Protein-Embeddings-for-Binding-Affinity-Prediction
-Integrates a 3D ligand GNN with ESM-2 protein embeddings through multi-head cross-attention to predict binding affinity. Model achieved 1.05 pKi RMSE on BindingDB pairs with far more lightweight pipeline than DeepAtom (1.23 pKi RMSE on PDBbind)
+# AI Drug Discovery: Protein-Ligand Affinity Prediction
+
+This project implements a deep learning pipeline for predicting protein-ligand binding affinity using 3D molecular graph embeddings and protein language model embeddings (ESM-2). 
+
+- **Dataset:** BindingDB
+- **Goal:** Predict pKi with low RMSE across held-out test pairs
+- **Result:** Achieved 1.05 RMSE, outperforming baselines such as DeepAtom (1.23 RMSE)
+- **Tech Stack:** PyTorch, PyTorch Geometric, RDKit, ESM-2, Cross-Attention Fusion
+- **Author:** Ashton Axe, MIT CS + Molecular Biology
+
+*This project was conducted as part of independent research on AI-driven drug discovery at MIT.*
 
 [📄 Read the full paper (PDF)](ligand_protein_affinity_prediction.pdf)
