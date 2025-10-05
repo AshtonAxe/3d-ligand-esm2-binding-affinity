@@ -10,3 +10,15 @@ This project implements a deep learning pipeline for predicting protein-ligand b
 *This project was conducted as part of independent research on AI-driven drug discovery at MIT.*
 
 [📄 Read the full paper (PDF)](ligand_protein_affinity_prediction.pdf)
+
+---
+
+## How to run the pipeline
+
+```bash
+git clone https://github.com/Ashton_Axe/Cross-Attention-of-3D-Drug-Geometry-and-ESM2-Protein-Embeddings-for-Binding-Affinity-Prediction.git
+cd Cross-Attention-of-3D-Drug-Geometry-and-ESM2-Protein-Embeddings-for-Binding-Affinity-Prediction
+conda create -n ligand_protein_prediction python=3.11
+conda activate ligand_protein_prediction
+pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118 torch-geometric==2.5.3 torch-scatter torch-sparse -f https://data.pyg.org/whl/torch-2.0.1+cu118.html numpy pandas rdkit
+python scripts/run_experiment.py
