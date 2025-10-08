@@ -1,15 +1,25 @@
 import pandas as pd
 import numpy as np
+import torch
+import torch_geometric
+from torch_geometric.data import Data
+from torch.utils.data import Dataset
+from torch_geometric.loader import DataLoader as PyGDataLoader
+import torch.utils.data
+import ast
+import rdkit.Geometry as rdGeom
+from sklearn.model_selection import train_test_split
+from torch_geometric.nn import MessagePassing, global_mean_pool
+import torch.nn as nn
+import torch.nn.functional as F
+from tqdm import tqdm
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
 
 # Load DataFrame
 df = pd.read_csv('bindingdb_esm2_embedded_50k.csv')
 invalid_indices = [5479] + list(range(19487, 19999))
 df = df.drop(index=invalid_indices).reset_index(drop=True)
-
-import torch
-import torch_geometric
-import numpy as np
-import pandas as pd
 
 # Simplified type mapping for metals
 type_to_onehot = {
@@ -36,14 +46,6 @@ for row in atomic_df.itertuples():
         "covalent_radius": row.covalent_radius,
         "metal_onehot": type_to_onehot.get(metal_type, [0, 0, 0, 0])
     }
-
-from torch_geometric.data import Data
-from torch.utils.data import Dataset
-from torch_geometric.loader import DataLoader as PyGDataLoader
-import torch.utils.data
-import ast
-import rdkit.Geometry as rdGeom
-from sklearn.model_selection import train_test_split
 
 def ligand_to_pyg_data(z, pos, in_channels=100):
     # Convert inputs to tensors
@@ -210,12 +212,6 @@ test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=16, collate_fn=custom_collate
 )
 
-from torch_geometric.nn import MessagePassing, global_mean_pool
-import torch.nn as nn
-import torch.nn.functional as F
-import torch
-
-
 class GNN(MessagePassing):
     def __init__(self, in_channels, out_channels, num_rbf=32, cutoff=10.0, gamma=10.0):
         super().__init__(aggr='add')
@@ -307,9 +303,6 @@ class ProteinLigandAffinityModel(nn.Module):
 
         combined_emb = torch.cat([protein_emb, attn_output], dim=-1).squeeze(1)  # [batch_size, 256]
         return self.mlp(combined_emb).squeeze(-1)  # [batch_size]
-
-from tqdm import tqdm
-from sklearn.metrics import mean_squared_error, r2_score
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = ProteinLigandAffinityModel(
@@ -446,7 +439,6 @@ torch.save({
 }, "training_state.pt")
 
 # Training & Validation Loss over Epochs
-import matplotlib.pyplot as plt
 plt.plot(train_losses, label='Train Loss')
 plt.plot(val_losses, label='Validation Loss')
 plt.xlabel("Epoch")
